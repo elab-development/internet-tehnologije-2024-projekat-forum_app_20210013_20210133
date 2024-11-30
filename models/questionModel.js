@@ -11,12 +11,19 @@ const questionSchema = new mongoose.Schema(
     body: {
       type: String,
       required: [true, "Body is required!"],
+      minlength: [5, "Body must be at least 5 characters long!"],
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    answers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Answer",
+      },
+    ],
     views: {
       type: Number,
       default: 0,
