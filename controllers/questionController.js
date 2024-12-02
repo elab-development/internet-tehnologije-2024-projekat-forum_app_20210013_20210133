@@ -1,14 +1,88 @@
 const Question = require("../models/questionModel.js");
 
-// @desc    Fetches all questions.
+// @desc    Fetches all questions ( with optional filters and pagination).
 // @route   GET /questions
 // @access  Public
 const fetchAllQuestions = async (req, res) => {
+  const {
+    minViews,
+    maxViews,
+    createdAfter,
+    createdBefore,
+    updatedAfter,
+    updatedBefore,
+    minAnswers,
+    maxAnswers,
+    page,
+    limit,
+  } = req.query;
+
   try {
-    const questions = await Question.find().populate("author").exec();
-    res.status(200).send(questions);
+    const filter = {};
+
+    // Filters for view count.
+    if (minViews !== undefined)
+      filter.views = { ...(filter.views || {}), $gte: Number(minViews) };
+    if (maxViews !== undefined)
+      filter.views = { ...(filter.views || {}), $lte: Number(maxViews) };
+
+    // Filters for created at.
+    if (createdAfter !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $gte: new Date(createdAfter),
+      };
+    if (createdBefore !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $lte: new Date(createdBefore),
+      };
+
+    // Filters for updated at.
+    if (updatedAfter !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $gte: new Date(updatedAfter),
+      };
+    if (updatedBefore !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $lte: new Date(updatedBefore),
+      };
+
+    let questions = await Question.find(filter)
+      .populate("answers")
+      .populate("author", "username")
+      .lean();
+
+    // Filters for answers count.
+    if (minAnswers !== undefined) {
+      questions = questions.filter(
+        (q) => q.answers.length >= Number(minAnswers)
+      );
+    }
+    if (maxAnswers !== undefined) {
+      questions = questions.filter(
+        (q) => q.answers.length <= Number(maxAnswers)
+      );
+    }
+
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(questions);
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const questionsLength = questions.length;
+    questions = questions.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: questionsLength,
+      page: Number(page),
+      totalPages: Math.ceil(questionsLength / limit),
+      questions,
+    });
   } catch (error) {
-    res.status(400).json(error.message);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -20,7 +94,7 @@ const fetchOneQuestion = async (req, res) => {
 
   try {
     const question = await Question.findById(questionId)
-      .populate("author")
+      .populate("author", "username")
       .exec();
 
     if (!question) return res.status(404).send("Question not found!");

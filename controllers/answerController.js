@@ -5,13 +5,80 @@ const {
   handleExistingVote,
 } = require("../utilities/voteUtility.js");
 
-// @desc    Fetches all answers.
+// @desc    Fetches all answers ( with optional filters and pagination).
 // @route   GET /answers
 // @access  Public
 const fetchAllAnswers = async (req, res) => {
+  const {
+    createdAfter,
+    createdBefore,
+    updatedAfter,
+    updatedBefore,
+    minTotalVoteScore,
+    maxTotalVoteScore,
+    page,
+    limit,
+  } = req.query;
+
   try {
-    const answers = await Answer.find().populate("author", "username").exec();
-    res.status(200).send(answers);
+    const filter = {};
+
+    // Filters for total vote score.
+    if (minTotalVoteScore !== undefined)
+      filter.totalVoteScore = {
+        ...(filter.totalVoteScore || {}),
+        $gte: Number(minTotalVoteScore),
+      };
+    if (maxTotalVoteScore !== undefined)
+      filter.totalVoteScore = {
+        ...(filter.totalVoteScore || {}),
+        $lte: Number(maxTotalVoteScore),
+      };
+
+    // Filters for created at.
+    if (createdAfter !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $gte: new Date(createdAfter),
+      };
+    if (createdBefore !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $lte: new Date(createdBefore),
+      };
+
+    // Filters for updated at.
+    if (updatedAfter !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $gte: new Date(updatedAfter),
+      };
+    if (updatedBefore !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $lte: new Date(updatedBefore),
+      };
+
+    let answers = await Answer.find(filter)
+      .populate("author", "username")
+      .populate("question", "title")
+      .populate("userVotes")
+      .lean();
+
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(answers);
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const answersLength = answers.length;
+    answers = answers.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: answersLength,
+      page: Number(page),
+      totalPages: Math.ceil(answersLength / limit),
+      answers,
+    });
   } catch (error) {
     res.status(400).json(error.message);
   }
@@ -24,10 +91,10 @@ const fetchOneAnswer = async (req, res) => {
   const { id: answerId } = req.params;
 
   try {
-    const answer = await Answer.findById(answerId).populate(
-      "author",
-      "username"
-    );
+    const answer = await Answer.findById(answerId)
+      .populate("author", "username")
+      .populate("question", "title")
+      .populate("userVotes");
 
     if (!answer) return res.status(404).json({ message: "Answer not found!" });
 
@@ -37,37 +104,159 @@ const fetchOneAnswer = async (req, res) => {
   }
 };
 
-// @desc    Fetches all answers on a question with id.
+// @desc    Fetches all answers on a question with id ( with optional filters and pagination).
 // @route   GET /answers/ofQuestion/:id
 // @access  Public
 const fetchAllAnswersByQuestion = async (req, res) => {
+  const {
+    createdAfter,
+    createdBefore,
+    updatedAfter,
+    updatedBefore,
+    minTotalVoteScore,
+    maxTotalVoteScore,
+    page,
+    limit,
+  } = req.query;
+
   const { id: questionId } = req.params;
 
   try {
-    const answers = await Answer.find({ question: questionId }).populate(
-      "author",
-      "username"
-    );
+    const filter = {};
 
-    res.status(200).json(answers);
+    // Filters for total vote score.
+    if (minTotalVoteScore !== undefined)
+      filter.totalVoteScore = {
+        ...(filter.totalVoteScore || {}),
+        $gte: Number(minTotalVoteScore),
+      };
+    if (maxTotalVoteScore !== undefined)
+      filter.totalVoteScore = {
+        ...(filter.totalVoteScore || {}),
+        $lte: Number(maxTotalVoteScore),
+      };
+
+    // Filters for created at.
+    if (createdAfter !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $gte: new Date(createdAfter),
+      };
+    if (createdBefore !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $lte: new Date(createdBefore),
+      };
+
+    // Filters for updated at.
+    if (updatedAfter !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $gte: new Date(updatedAfter),
+      };
+    if (updatedBefore !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $lte: new Date(updatedBefore),
+      };
+
+    let answers = await Answer.find({ question: questionId, ...filter })
+      .populate("author", "username")
+      .populate("userVotes");
+
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(answers);
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const answersLength = answers.length;
+    answers = answers.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: answersLength,
+      page: Number(page),
+      totalPages: Math.ceil(answersLength / limit),
+      answers,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Fetches all answers of a user with id.
+// @desc    Fetches all answers of a user with id ( with optional filters and pagination).
 // @route   GET /answers/ofUser/:id
 // @access  Public
 const fetchAllAnswersByUser = async (req, res) => {
+  const {
+    createdAfter,
+    createdBefore,
+    updatedAfter,
+    updatedBefore,
+    minTotalVoteScore,
+    maxTotalVoteScore,
+    page,
+    limit,
+  } = req.query;
+
   const { id: userId } = req.params;
 
   try {
-    const answers = await Answer.find({ author: userId }).populate(
-      "question",
-      "title"
-    );
+    const filter = {};
 
-    res.status(200).json(answers);
+    // Filters for total vote score.
+    if (minTotalVoteScore !== undefined)
+      filter.totalVoteScore = {
+        ...(filter.totalVoteScore || {}),
+        $gte: Number(minTotalVoteScore),
+      };
+    if (maxTotalVoteScore !== undefined)
+      filter.totalVoteScore = {
+        ...(filter.totalVoteScore || {}),
+        $lte: Number(maxTotalVoteScore),
+      };
+
+    // Filters for created at.
+    if (createdAfter !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $gte: new Date(createdAfter),
+      };
+    if (createdBefore !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $lte: new Date(createdBefore),
+      };
+
+    // Filters for updated at.
+    if (updatedAfter !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $gte: new Date(updatedAfter),
+      };
+    if (updatedBefore !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $lte: new Date(updatedBefore),
+      };
+
+    let answers = await Answer.find({ author: userId, ...filter })
+      .populate("question", "title")
+      .populate("userVotes");
+
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(answers);
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const answersLength = answers.length;
+    answers = answers.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: answersLength,
+      page: Number(page),
+      totalPages: Math.ceil(answersLength / limit),
+      answers,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -166,7 +355,7 @@ const voteOnAnswer = async (req, res) => {
     return res.status(400).json({ message: "Invalid vote option!" });
 
   try {
-    const answer = await Answer.findById(answerId);
+    const answer = await Answer.findById(answerId).populate("userVotes");
     if (!answer) return res.status(404).json({ message: "Answer not found!" });
 
     const existingVote = answer.userVotes.find(

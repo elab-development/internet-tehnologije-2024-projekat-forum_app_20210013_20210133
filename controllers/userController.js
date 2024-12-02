@@ -2,11 +2,11 @@ const User = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// @desc    Fetches all users ( with optional filters).
+// @desc    Fetches all users ( with optional filters and pagination).
 // @route   GET /users
 // @access  Public
 const fetchAllUsers = async (req, res) => {
-  const { isAdmin, isBanned } = req.query;
+  const { isAdmin, isBanned, page, limit } = req.query;
 
   try {
     const filter = {};
@@ -14,9 +14,21 @@ const fetchAllUsers = async (req, res) => {
     if (isAdmin !== undefined) filter.isAdmin = isAdmin === "true";
     if (isBanned !== undefined) filter.isBanned = isBanned === "true";
 
-    const users = await User.find(filter).select("-password");
+    let users = await User.find(filter).select("-password").lean();
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(users);
 
-    res.status(200).json(users);
+    // Pagination
+    const skip = (page - 1) * limit;
+    const usersLength = users.length;
+    users = users.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: usersLength,
+      page: Number(page),
+      totalPages: Math.ceil(usersLength / limit),
+      users,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
