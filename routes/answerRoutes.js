@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  fetchAllAnswers,
   fetchOneAnswer,
   fetchAllAnswersByQuestion,
   fetchAllAnswersByUser,
@@ -13,6 +14,7 @@ const banCheckMiddleware = require("../middleware/banCheckMiddleware.js");
 
 const router = express.Router();
 
+router.route("/").get(fetchAllAnswers);
 router.route("/:id").get(fetchOneAnswer);
 router.route("/byQuestion/:id").get(fetchAllAnswersByQuestion);
 router.route("/byUser/:id").get(fetchAllAnswersByUser);

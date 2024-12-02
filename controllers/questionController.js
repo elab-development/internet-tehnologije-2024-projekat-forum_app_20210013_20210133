@@ -33,7 +33,7 @@ const fetchOneQuestion = async (req, res) => {
 
 // @desc    Adds a new question.
 // @route   POST /questions
-// @access  Public
+// @access  User only
 const addQuestion = async (req, res) => {
   const { title, body } = req.body;
 
@@ -53,7 +53,7 @@ const addQuestion = async (req, res) => {
 
 // @desc    Updates a question with id.
 // @route   PUT /questions/:id
-// @access  Public
+// @access  User only
 const updateQuestion = async (req, res) => {
   const questionId = req.params.id;
   const { title, body } = req.body;
@@ -78,7 +78,7 @@ const updateQuestion = async (req, res) => {
 
 // @desc    Deletes a question with id.
 // @route   DELETE /questions/:id
-// @access  Public
+// @access  User only
 const deleteQuestion = async (req, res) => {
   const questionId = req.params.id;
 

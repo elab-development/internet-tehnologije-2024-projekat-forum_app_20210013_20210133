@@ -1,25 +1,32 @@
-const express = require("express");
-const {
-  registerUser,
-  loginUser,
-  logoutUser,
-  promoteUserToAdmin,
-  banUser,
-  unbanUser,
-} = require("../controllers/userController.js");
-const authMiddleware = require("../middleware/authMiddleware.js");
-const adminCheckMiddleware = require("../middleware/adminCheckMiddleware.js");
+const mongoose = require("mongoose");
 
-const router = express.Router();
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: [true, "Username is required!"],
+      unique: true,
+      minlength: [3, "Username must be at least 3 characters long!"],
+      maxlength: [30, "Username cannot exceed 30 characters!"],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required!"],
+    },
+    reputation: {
+      type: Number,
+      default: 0,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+); // Adds createdAt and updatedAt fields.
 
-router.route("/register").post(registerUser);
-router.route("/login").post(loginUser);
-router.route("/logout").post(logoutUser);
-router
-  .route("/:id/promote")
-  .put(authMiddleware, adminCheckMiddleware, promoteUserToAdmin);
-
-router.route("/:id/ban").put(authMiddleware, adminCheckMiddleware, banUser);
-router.route("/:id/unban").put(authMiddleware, adminCheckMiddleware, unbanUser);
-
-module.exports = router;
+module.exports = mongoose.model("User", userSchema);

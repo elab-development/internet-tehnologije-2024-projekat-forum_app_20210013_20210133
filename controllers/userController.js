@@ -2,6 +2,43 @@ const User = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+// @desc    Fetches all users ( with optional filters).
+// @route   GET /users
+// @access  Public
+const fetchAllUsers = async (req, res) => {
+  const { isAdmin, isBanned } = req.query;
+
+  try {
+    const filter = {};
+
+    if (isAdmin !== undefined) filter.isAdmin = isAdmin === "true";
+    if (isBanned !== undefined) filter.isBanned = isBanned === "true";
+
+    const users = await User.find(filter).select("-password");
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Fetches user with id.
+// @route   GET /users/:id
+// @access  Public
+const fetchOneUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findById(userId).select("-password").exec();
+
+    if (!user) return res.status(404).send("User not found!");
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).json(error.message);
+  }
+};
+
 // @desc    Registers a user in.
 // @route   POST /users/register
 // @access  Public
@@ -20,7 +57,10 @@ const registerUser = async (req, res) => {
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully!" });
+    const userToSend = newUser.toObject();
+    delete userToSend.password;
+
+    res.status(201).json(userToSend);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -41,7 +81,10 @@ const loginUser = async (req, res) => {
       expiresIn: "2h",
     });
 
-    res.status(200).json({ token });
+    const userToSend = user.toObject();
+    delete userToSend.password;
+
+    res.status(200).json({ user: userToSend, token: token });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -56,7 +99,7 @@ const logoutUser = (req, res) => {
 
 // @desc    Promotes user to an admin.
 // @route   PUT /users/:id/promote
-// @access  Public
+// @access  Admin only
 const promoteUserToAdmin = async (req, res) => {
   const { id: userId } = req.params;
 
@@ -67,10 +110,18 @@ const promoteUserToAdmin = async (req, res) => {
     if (user.isAdmin)
       return res.status(200).json({ message: "User already an admin!" });
 
+    if (user.isBanned)
+      return res.status(200).json({
+        message: "This user is banned! Unban them first then promote to admin!",
+      });
+
     user.isAdmin = true;
     await user.save();
 
-    res.status(200).json(user);
+    const userToSend = user.toObject();
+    delete userToSend.password;
+
+    res.status(200).json(userToSend);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -78,7 +129,7 @@ const promoteUserToAdmin = async (req, res) => {
 
 // @desc    Bans a user.
 // @route   PUT /users/:id/ban
-// @access  Public
+// @access  Admin only
 const banUser = async (req, res) => {
   const { id: userId } = req.params;
 
@@ -97,7 +148,10 @@ const banUser = async (req, res) => {
     user.isBanned = true;
     await user.save();
 
-    res.status(200).json(user);
+    const userToSend = user.toObject();
+    delete userToSend.password;
+
+    res.status(200).json(userToSend);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -105,7 +159,7 @@ const banUser = async (req, res) => {
 
 // @desc    Unbans a user.
 // @route   PUT /users/:id/unban
-// @access  Public
+// @access  Admin only
 const unbanUser = async (req, res) => {
   const { id: userId } = req.params;
 
@@ -124,13 +178,18 @@ const unbanUser = async (req, res) => {
     user.isBanned = false;
     await user.save();
 
-    res.status(200).json(user);
+    const userToSend = user.toObject();
+    delete userToSend.password;
+
+    res.status(200).json(userToSend);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 module.exports = {
+  fetchAllUsers,
+  fetchOneUser,
   registerUser,
   loginUser,
   logoutUser,

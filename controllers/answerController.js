@@ -5,6 +5,18 @@ const {
   handleExistingVote,
 } = require("../utilities/voteUtility.js");
 
+// @desc    Fetches all answers.
+// @route   GET /answers
+// @access  Public
+const fetchAllAnswers = async (req, res) => {
+  try {
+    const answers = await Answer.find().populate("author", "username").exec();
+    res.status(200).send(answers);
+  } catch (error) {
+    res.status(400).json(error.message);
+  }
+};
+
 // @desc    Fetches answer with id.
 // @route   GET /answers/:id
 // @access  Public
@@ -63,7 +75,7 @@ const fetchAllAnswersByUser = async (req, res) => {
 
 // @desc    Adds a new answer.
 // @route   POST /answers
-// @access  Public
+// @access  User only
 const addAnswer = async (req, res) => {
   const { body, questionId } = req.body;
 
@@ -87,7 +99,7 @@ const addAnswer = async (req, res) => {
 
 // @desc    Updates an answer with id.
 // @route   PUT /answers/:id
-// @access  Public
+// @access  User only
 const updateAnswer = async (req, res) => {
   const { id: answerId } = req.params;
   const { body } = req.body;
@@ -113,7 +125,7 @@ const updateAnswer = async (req, res) => {
 
 // @desc    Deletes an answer with id.
 // @route   DELETE /answers/:id
-// @access  Public
+// @access  User only
 const deleteAnswer = async (req, res) => {
   const { id: answerId } = req.params;
 
@@ -144,7 +156,7 @@ const deleteAnswer = async (req, res) => {
 
 // @desc    Updates the votes on an answer with id.
 // @route   POST /answers/:id/vote
-// @access  Public
+// @access  User only
 const voteOnAnswer = async (req, res) => {
   const { id: answerId } = req.params;
   const { vote } = req.body;
@@ -170,6 +182,7 @@ const voteOnAnswer = async (req, res) => {
 };
 
 module.exports = {
+  fetchAllAnswers,
   fetchOneAnswer,
   fetchAllAnswersByQuestion,
   fetchAllAnswersByUser,
