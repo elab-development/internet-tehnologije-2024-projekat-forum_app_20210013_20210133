@@ -4,6 +4,8 @@ const {
   loginUser,
   logoutUser,
   promoteUserToAdmin,
+  banUser,
+  unbanUser,
 } = require("../controllers/userController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const adminCheckMiddleware = require("../middleware/adminCheckMiddleware.js");
@@ -16,5 +18,8 @@ router.route("/logout").post(logoutUser);
 router
   .route("/:id/promote")
   .put(authMiddleware, adminCheckMiddleware, promoteUserToAdmin);
+
+router.route("/:id/ban").put(authMiddleware, adminCheckMiddleware, banUser);
+router.route("/:id/unban").put(authMiddleware, adminCheckMiddleware, unbanUser);
 
 module.exports = router;

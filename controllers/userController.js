@@ -76,4 +76,65 @@ const promoteUserToAdmin = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, logoutUser, promoteUserToAdmin };
+// @desc    Bans a user.
+// @route   PUT /users/:id/ban
+// @access  Public
+const banUser = async (req, res) => {
+  const { id: userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found!" });
+
+    if (user.isAdmin)
+      return res
+        .status(401)
+        .json({ message: "Operation illegal because user is an admin!" });
+
+    if (user.isBanned)
+      return res.status(200).json({ message: "User already banned!" });
+
+    user.isBanned = true;
+    await user.save();
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Unbans a user.
+// @route   PUT /users/:id/unban
+// @access  Public
+const unbanUser = async (req, res) => {
+  const { id: userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found!" });
+
+    if (user.isAdmin)
+      return res
+        .status(401)
+        .json({ message: "Operation illegal because user is an admin!" });
+
+    if (!user.isBanned)
+      return res.status(200).json({ message: "User was not banned!" });
+
+    user.isBanned = false;
+    await user.save();
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  promoteUserToAdmin,
+  banUser,
+  unbanUser,
+};
