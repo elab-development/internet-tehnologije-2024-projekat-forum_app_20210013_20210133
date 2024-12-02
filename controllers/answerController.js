@@ -121,8 +121,11 @@ const deleteAnswer = async (req, res) => {
     const answer = await Answer.findById(answerId);
     if (!answer) return res.status(404).json({ message: "Answer not found!" });
 
-    // Checks if user is the author. authMiddleware populates req.user field.
-    if (answer.author.toString() !== req.user._id.toString())
+    // Checks if user is admin or the author. authMiddleware populates req.user field.
+    if (
+      !req.user.isAdmin &&
+      answer.author.toString() !== req.user._id.toString()
+    )
       return res
         .status(403)
         .json({ message: "Unauthorized to delete this answer!" });

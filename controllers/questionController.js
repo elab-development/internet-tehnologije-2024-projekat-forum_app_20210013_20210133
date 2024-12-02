@@ -64,9 +64,7 @@ const updateQuestion = async (req, res) => {
 
     // Checks if user is the author. authMiddleware populates req.user field.
     if (question.author.toString() !== req.user._id.toString())
-      return res
-        .status(403)
-        .send("You are not authorized to update this question!");
+      return res.status(403).send("Unauthorized to update this question!");
 
     question.title = title;
     question.body = body;
@@ -88,11 +86,12 @@ const deleteQuestion = async (req, res) => {
     const question = await Question.findById(questionId);
     if (!question) return res.status(404).send("Question not found!");
 
-    // Checks if user is the author. authMiddleware populates req.user field.
-    if (question.author.toString() !== req.user._id.toString())
-      return res
-        .status(403)
-        .send("You are not authorized to delete this question!");
+    // Checks if user is admin or the author. authMiddleware populates req.user field.
+    if (
+      !req.user.isAdmin &&
+      question.author.toString() !== req.user._id.toString()
+    )
+      return res.status(403).send("Unauthorized to delete this question!");
 
     await question.deleteOne();
     res.status(200).send(question);

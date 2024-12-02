@@ -1,4 +1,4 @@
-// Handles the logic if the user has already voted
+// @desc  Handles the logic if the user has already voted.
 const handleExistingVote = async (existingVote, vote, userId, answer, res) => {
   if (existingVote.vote === vote) {
     await retractVote(vote, userId, answer);
@@ -8,7 +8,7 @@ const handleExistingVote = async (existingVote, vote, userId, answer, res) => {
   return res.status(200).json(answer);
 };
 
-// Retracts a users vote
+// @desc  Retracts a users vote.
 const retractVote = async (vote, userId, answer) => {
   answer.totalVoteScore -= vote === "upvote" ? 1 : -1;
   answer.userVotes = answer.userVotes.filter(
@@ -17,7 +17,7 @@ const retractVote = async (vote, userId, answer) => {
   await answer.save();
 };
 
-// Switches the users vote from one to another
+// @desc  Switches the users vote from one to another.
 const switchVote = async (vote, userId, answer) => {
   answer.totalVoteScore += vote === "upvote" ? 2 : -2;
   answer.userVotes = answer.userVotes.map((v) =>
@@ -26,7 +26,7 @@ const switchVote = async (vote, userId, answer) => {
   await answer.save();
 };
 
-// Adds a new vote if the user hasn't voted before
+// @desc  Adds a new vote if the user hasn't voted before.
 const handleNewVote = async (vote, userId, answer, res) => {
   answer.totalVoteScore += vote === "upvote" ? 1 : -1;
   answer.userVotes.push({ userId, vote });
