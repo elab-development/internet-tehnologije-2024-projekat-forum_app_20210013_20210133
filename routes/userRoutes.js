@@ -9,6 +9,8 @@ const {
   promoteUserToAdmin,
   banUser,
   unbanUser,
+  requestPasswordReset,
+  resetPassword,
 } = require("../controllers/userController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const adminCheckMiddleware = require("../middleware/adminCheckMiddleware.js");
@@ -26,5 +28,7 @@ router
   .put(authMiddleware, adminCheckMiddleware, promoteUserToAdmin);
 router.route("/:id/ban").put(authMiddleware, adminCheckMiddleware, banUser);
 router.route("/:id/unban").put(authMiddleware, adminCheckMiddleware, unbanUser);
+router.post("/forgotPassword", requestPasswordReset);
+router.post("/resetPassword/:token", resetPassword);
 
 module.exports = router;

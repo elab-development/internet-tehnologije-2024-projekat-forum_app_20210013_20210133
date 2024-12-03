@@ -1,6 +1,7 @@
 const User = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 // @desc    Fetches all users ( with optional filters and pagination).
 // @route   GET /users
@@ -87,7 +88,7 @@ const fetchUsersByReputation = async (req, res) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
     if (password.length < 5) {
       return res
@@ -97,7 +98,7 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     const userToSend = newUser.toObject();
@@ -230,6 +231,77 @@ const unbanUser = async (req, res) => {
   }
 };
 
+// @desc    Requests user password reset.
+// @route   POST /users/forgotPassword
+// @access  Public
+const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "User not found with that email!" });
+    }
+
+    const resetToken = jwt.sign(
+      { userId: user._id },
+      process.env.TOKEN_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    const resetUrl = `http://localhost:9000/users/resetPassword/${resetToken}`;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "null.pointer.noreply@gmail.com",
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: "null.pointer.app.noreply@gmail.com",
+      to: user.email,
+      subject: "NullPointer - Password Reset Request",
+      text: `Send a POST request with a field 'newPassword' to this URL to reset your password: ${resetUrl}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Email sent for password reset!" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Resets user password.
+// @route   POST /users/resetPassword/:token
+// @access  Public
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(400).json({ message: "User not found!" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful!" });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid or expired token!" });
+  }
+};
+
 module.exports = {
   fetchAllUsers,
   fetchOneUser,
@@ -240,4 +312,6 @@ module.exports = {
   promoteUserToAdmin,
   banUser,
   unbanUser,
+  requestPasswordReset,
+  resetPassword,
 };
