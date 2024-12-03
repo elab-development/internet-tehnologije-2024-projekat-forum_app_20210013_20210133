@@ -1,3 +1,4 @@
+const User = require("../models/userModel.js");
 const Question = require("../models/questionModel.js");
 
 // @desc    Fetches all questions ( with optional filters and pagination).
@@ -110,15 +111,34 @@ const fetchOneQuestion = async (req, res) => {
 // @access  User only
 const addQuestion = async (req, res) => {
   const { title, body } = req.body;
+  const userId = req.user._id; // authMiddleware populates req.user field.
 
   try {
     const newQuestion = new Question({
       title,
       body,
-      author: req.user._id, // authMiddleware populates req.user field.
+      author: userId,
     });
 
     await newQuestion.save();
+
+    // Reward user if this is their first question of the day.
+    const user = await User.findById(userId);
+
+    const today = new Date();
+    const lastRewardDate = user.lastQuestionReward
+      ? new Date(user.lastQuestionReward)
+      : null;
+
+    if (
+      !lastRewardDate ||
+      today.toDateString() !== lastRewardDate.toDateString()
+    ) {
+      user.reputation += 5;
+      user.lastQuestionReward = today;
+      await user.save();
+    }
+
     res.status(201).send(newQuestion);
   } catch (error) {
     res.status(400).send(error.message);

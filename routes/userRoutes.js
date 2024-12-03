@@ -2,6 +2,7 @@ const express = require("express");
 const {
   fetchAllUsers,
   fetchOneUser,
+  fetchUsersByReputation,
   registerUser,
   loginUser,
   logoutUser,
@@ -14,6 +15,7 @@ const adminCheckMiddleware = require("../middleware/adminCheckMiddleware.js");
 
 const router = express.Router();
 
+router.get("/byReputation", fetchUsersByReputation);
 router.get("/", fetchAllUsers);
 router.get("/:id", fetchOneUser);
 router.route("/register").post(registerUser);

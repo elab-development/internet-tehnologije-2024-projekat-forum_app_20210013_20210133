@@ -51,6 +51,37 @@ const fetchOneUser = async (req, res) => {
   }
 };
 
+// @desc    Fetches all users sorted by reputation in descending order ( with optional pagination).
+// @route   GET /users/byReputation
+// @access  Public
+const fetchUsersByReputation = async (req, res) => {
+  const { page, limit } = req.query;
+
+  try {
+    let users = await User.find()
+      .select("username reputation")
+      .sort({ reputation: -1 })
+      .lean();
+
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(users);
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const usersLength = users.length;
+    users = users.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: usersLength,
+      page: Number(page),
+      totalPages: Math.ceil(usersLength / limit),
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Registers a user in.
 // @route   POST /users/register
 // @access  Public
@@ -202,6 +233,7 @@ const unbanUser = async (req, res) => {
 module.exports = {
   fetchAllUsers,
   fetchOneUser,
+  fetchUsersByReputation,
   registerUser,
   loginUser,
   logoutUser,

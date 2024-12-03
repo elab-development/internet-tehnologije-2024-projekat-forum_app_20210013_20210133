@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    lastQuestionReward: {
+      type: Date,
+    },
   },
   { timestamps: true }
 ); // Adds createdAt and updatedAt fields.
