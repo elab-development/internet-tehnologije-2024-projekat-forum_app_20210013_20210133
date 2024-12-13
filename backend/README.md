@@ -25,21 +25,23 @@ Before you start, ensure you have the following installed on your machine:
 ### 1. Clone the repository
 
 ```
-git clone https://github.com your-username/repo-name.git
-cd repo-name
+mkdir forum_app
+cd forum_app
+git clone https://github.com/elab-development/internet-tehnologije-2024-projekat-forum_app_20210013_20210133.git .
 ```
 
 ### 2. Install dependencies
 
-Run the following command to install the necessary packages:
+Run the following commands to install the necessary packages:
 
 ```
+cd backend
 npm install
 ```
 
 ### 3. Setup environment variables
 
-Create a .env file in the root directory of the project and add the following environment variables:
+Create a .env file in the root of the backend directory and add the following environment variables:
 
 ```
 PORT=port_number
@@ -59,7 +61,7 @@ For the email service, you should use Gmail (check email configuration for "Less
 
 ### 4. Run the Project
 
-To start the application, run:
+To start the application, make sure you are in the backend directory, then run:
 
 ```
 npm start
