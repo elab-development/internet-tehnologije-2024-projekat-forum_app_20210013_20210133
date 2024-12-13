@@ -9,7 +9,12 @@ const answerRoutes = require("./routes/answerRoutes.js");
 dotenv.config();
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: `http://localhost:${process.env.FRONTEND_PORT}`,
+  })
+);
+
 app.use(express.json());
 
 connectDB();

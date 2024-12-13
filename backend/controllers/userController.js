@@ -115,8 +115,8 @@ const registerUser = async (req, res) => {
 // @access  Public
 const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
     if (!user || !(await bcrypt.compare(password, user.password)))
       return res.status(401).json({ message: "Invalid credentials!" });
@@ -253,7 +253,7 @@ const requestPasswordReset = async (req, res) => {
       }
     );
 
-    const resetUrl = `http://localhost:${process.env.PORT}/users/resetPassword/${resetToken}`;
+    const resetUrl = `http://localhost:${process.env.FRONTEND_PORT}/reset-password?token=${resetToken}`;
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -267,7 +267,7 @@ const requestPasswordReset = async (req, res) => {
       from: "null.pointer.app.noreply@gmail.com",
       to: user.email,
       subject: "NullPointer - Password Reset Request",
-      text: `Send a POST request with a field 'newPassword' to this URL to reset your password: ${resetUrl}`,
+      text: `Please visit the following URL to reset your password: ${resetUrl}`,
     };
 
     await transporter.sendMail(mailOptions);
