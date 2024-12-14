@@ -63,7 +63,8 @@ const fetchAllAnswers = async (req, res) => {
       .populate("author", "username")
       .populate("question", "title")
       .populate("userVotes")
-      .lean();
+      .lean()
+      .sort({ createdAt: -1 });
 
     if (!page || !limit || page <= 0 || limit <= 0)
       return res.status(200).json(answers);
@@ -161,8 +162,10 @@ const fetchAllAnswersByQuestion = async (req, res) => {
       };
 
     let answers = await Answer.find({ question: questionId, ...filter })
+      .populate("userVotes")
       .populate("author", "username")
-      .populate("userVotes");
+      .lean()
+      .sort({ createdAt: -1 });
 
     if (!page || !limit || page <= 0 || limit <= 0)
       return res.status(200).json(answers);
@@ -241,7 +244,9 @@ const fetchAllAnswersByUser = async (req, res) => {
 
     let answers = await Answer.find({ author: userId, ...filter })
       .populate("question", "title")
-      .populate("userVotes");
+      .populate("userVotes")
+      .lean()
+      .sort({ createdAt: -1 });
 
     if (!page || !limit || page <= 0 || limit <= 0)
       return res.status(200).json(answers);
@@ -280,7 +285,12 @@ const addAnswer = async (req, res) => {
       $push: { answers: newAnswer._id },
     });
 
-    res.status(201).json(newAnswer);
+    const populatedAnswer = await Answer.findById(newAnswer._id).populate(
+      "author",
+      "username"
+    );
+
+    res.status(201).json(populatedAnswer);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

@@ -54,7 +54,8 @@ const fetchAllQuestions = async (req, res) => {
     let questions = await Question.find(filter)
       .populate("answers")
       .populate("author", "username")
-      .lean();
+      .lean()
+      .sort({ createdAt: -1 });
 
     // Filters for answers count.
     if (minAnswers !== undefined) {

@@ -23,6 +23,7 @@ const LoginPage = () => {
         userData
       );
       localStorage.setItem("token", response.data.token);
+      navigate("/questions");
     } catch (err) {
       setError(
         err.response

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "../../config/baseUrl";
 
@@ -8,6 +8,8 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +23,8 @@ const RegisterPage = () => {
         `${baseUrl}:${import.meta.env.VITE_BACKEND_PORT}/users/register`,
         userData
       );
+
+      navigate("/login");
     } catch (err) {
       setError(
         err.response
