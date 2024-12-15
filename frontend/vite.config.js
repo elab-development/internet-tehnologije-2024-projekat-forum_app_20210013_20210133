@@ -14,5 +14,8 @@ export default defineConfig({
   },
   server: {
     port: parseInt(process.env.VITE_PORT),
+    mimeTypes: {
+      ".js": "application/javascript",
+    },
   },
 });

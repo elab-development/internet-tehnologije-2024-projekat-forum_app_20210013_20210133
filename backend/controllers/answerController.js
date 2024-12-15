@@ -106,7 +106,7 @@ const fetchOneAnswer = async (req, res) => {
 };
 
 // @desc    Fetches all answers on a question with id ( with optional filters and pagination).
-// @route   GET /answers/ofQuestion/:id
+// @route   GET /answers/byQuestion/:id
 // @access  Public
 const fetchAllAnswersByQuestion = async (req, res) => {
   const {
@@ -187,7 +187,7 @@ const fetchAllAnswersByQuestion = async (req, res) => {
 };
 
 // @desc    Fetches all answers of a user with id ( with optional filters and pagination).
-// @route   GET /answers/ofUser/:id
+// @route   GET /answers/byUser/:id
 // @access  Public
 const fetchAllAnswersByUser = async (req, res) => {
   const {

@@ -107,6 +107,71 @@ const fetchOneQuestion = async (req, res) => {
   }
 };
 
+// @desc    Fetches all questions of a user with id ( with optional filters and pagination).
+// @route   GET /questions/byUser/:id
+// @access  Public
+const fetchAllQuestionsByUser = async (req, res) => {
+  const {
+    createdAfter,
+    createdBefore,
+    updatedAfter,
+    updatedBefore,
+    page,
+    limit,
+  } = req.query;
+
+  const { id: userId } = req.params;
+
+  try {
+    const filter = {};
+
+    // Filters for created at.
+    if (createdAfter !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $gte: new Date(createdAfter),
+      };
+    if (createdBefore !== undefined)
+      filter.createdAt = {
+        ...(filter.createdAt || {}),
+        $lte: new Date(createdBefore),
+      };
+
+    // Filters for updated at.
+    if (updatedAfter !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $gte: new Date(updatedAfter),
+      };
+    if (updatedBefore !== undefined)
+      filter.updatedAt = {
+        ...(filter.updatedAt || {}),
+        $lte: new Date(updatedBefore),
+      };
+
+    let questions = await Question.find({ author: userId, ...filter })
+      .lean()
+      .sort({ createdAt: -1 });
+
+    if (!page || !limit || page <= 0 || limit <= 0)
+      return res.status(200).json(questions);
+
+    // Pagination
+    const skip = (page - 1) * limit;
+    const questionsLength = questions.length;
+    questions = questions.slice(skip, skip + Number(limit));
+
+    res.status(200).json({
+      total: questionsLength,
+      page: Number(page),
+      totalPages: Math.ceil(questionsLength / limit),
+      questions,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // @desc    Adds a new question.
 // @route   POST /questions
 // @access  User only
@@ -115,14 +180,6 @@ const addQuestion = async (req, res) => {
   const userId = req.user._id; // authMiddleware populates req.user field.
 
   try {
-    const newQuestion = new Question({
-      title,
-      body,
-      author: userId,
-    });
-
-    await newQuestion.save();
-
     // Reward user if this is their first question of the day.
     const user = await User.findById(userId);
 
@@ -140,7 +197,20 @@ const addQuestion = async (req, res) => {
       await user.save();
     }
 
-    res.status(201).send(newQuestion);
+    const newQuestion = new Question({
+      title,
+      body,
+      author: userId,
+    });
+
+    await newQuestion.save();
+
+    const populatedQuestion = await Question.findById(newQuestion._id).populate(
+      "author",
+      "username"
+    );
+
+    res.status(201).send(populatedQuestion);
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -220,6 +290,7 @@ const updateViewCountOnQuestion = async (req, res) => {
 module.exports = {
   fetchAllQuestions,
   fetchOneQuestion,
+  fetchAllQuestionsByUser,
   addQuestion,
   updateQuestion,
   deleteQuestion,
