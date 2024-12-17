@@ -63,6 +63,7 @@ const fetchAllAnswers = async (req, res) => {
       .populate("author", "username")
       .populate("question", "title")
       .populate("userVotes")
+      .populate("userVotes.user", "username")
       .lean()
       .sort({ createdAt: -1 });
 
@@ -95,7 +96,8 @@ const fetchOneAnswer = async (req, res) => {
     const answer = await Answer.findById(answerId)
       .populate("author", "username")
       .populate("question", "title")
-      .populate("userVotes");
+      .populate("userVotes")
+      .populate("userVotes.user", "username");
 
     if (!answer) return res.status(404).json({ message: "Answer not found!" });
 
@@ -163,6 +165,7 @@ const fetchAllAnswersByQuestion = async (req, res) => {
 
     let answers = await Answer.find({ question: questionId, ...filter })
       .populate("userVotes")
+      .populate("userVotes.user", "username")
       .populate("author", "username")
       .lean()
       .sort({ createdAt: -1 });
@@ -245,6 +248,7 @@ const fetchAllAnswersByUser = async (req, res) => {
     let answers = await Answer.find({ author: userId, ...filter })
       .populate("question", "title")
       .populate("userVotes")
+      .populate("userVotes.user", "username")
       .lean()
       .sort({ createdAt: -1 });
 
@@ -365,11 +369,12 @@ const voteOnAnswer = async (req, res) => {
     return res.status(400).json({ message: "Invalid vote option!" });
 
   try {
-    const answer = await Answer.findById(answerId).populate("userVotes");
+    const answer = await Answer.findById(answerId);
+
     if (!answer) return res.status(404).json({ message: "Answer not found!" });
 
     const existingVote = answer.userVotes.find(
-      (v) => v.userId.toString() === userId.toString()
+      (v) => v.user._id.toString() === userId.toString()
     );
 
     if (!existingVote) return await handleNewVote(vote, userId, answer, res);

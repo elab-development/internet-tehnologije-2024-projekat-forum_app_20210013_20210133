@@ -14,8 +14,11 @@ const handleExistingVote = async (existingVote, vote, userId, answer, res) => {
 const retractVote = async (vote, userId, answer) => {
   answer.totalVoteScore -= vote === "upvote" ? 1 : -1;
   answer.userVotes = answer.userVotes.filter(
-    (v) => v.userId.toString() !== userId.toString()
+    (v) => v.user._id.toString() !== userId.toString()
   );
+
+  answer.populate("userVotes.user", "username");
+
   await answer.save();
 
   // Update reputation of answer author
@@ -30,8 +33,11 @@ const retractVote = async (vote, userId, answer) => {
 const switchVote = async (vote, userId, answer) => {
   answer.totalVoteScore += vote === "upvote" ? 2 : -2;
   answer.userVotes = answer.userVotes.map((v) =>
-    v.userId.toString() === userId.toString() ? { ...v, vote: vote } : v
+    v.user._id.toString() === userId.toString() ? { ...v, vote: vote } : v
   );
+
+  answer.populate("userVotes.user", "username");
+
   await answer.save();
 
   // Update reputation of answer author
@@ -45,7 +51,10 @@ const switchVote = async (vote, userId, answer) => {
 // @desc  Adds a new vote if the user hasn't voted before.
 const handleNewVote = async (vote, userId, answer, res) => {
   answer.totalVoteScore += vote === "upvote" ? 1 : -1;
-  answer.userVotes.push({ userId, vote });
+  answer.userVotes.push({ user: { _id: userId }, vote: vote });
+
+  answer.populate("userVotes.user", "username");
+
   await answer.save();
 
   // Update reputation of answer author

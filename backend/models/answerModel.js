@@ -23,7 +23,7 @@ const answerSchema = new mongoose.Schema(
     },
     userVotes: [
       {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         vote: { type: String, enum: ["upvote", "downvote"], required: true },
       },
     ],

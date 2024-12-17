@@ -1,7 +1,20 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const LandingPage = () => {
+  const { isAuthenticated } = useAuth();
+  const [isLoggedIn, setIsLoggedIn] = useState();
+
+  useEffect(() => {
+    setIsLoggedIn(isAuthenticated);
+  }, [isAuthenticated]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+  };
+
   return (
     <div className="h-screen flex flex-col justify-center items-center">
       <h1 className="text-4xl font-bold text-blue-600 mb-4 dark:text-blue-400">
@@ -18,12 +31,21 @@ const LandingPage = () => {
         >
           Browse Questions
         </Link>
-        <Link
-          to="/login"
-          className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-        >
-          Login
-        </Link>
+        {isLoggedIn ? (
+          <button
+            onClick={handleLogout}
+            className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+          >
+            Logout
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+          >
+            Login
+          </Link>
+        )}
       </div>
     </div>
   );

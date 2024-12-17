@@ -5,6 +5,7 @@ import { baseUrl } from "../config/baseUrl";
 import useAuth from "../hooks/useAuth";
 
 import Toolbar from "../components/Toolbar";
+import Question from "../components/Question";
 
 const QuestionsPage = () => {
   const [questions, setQuestions] = useState([]);
@@ -429,33 +430,13 @@ const QuestionsPage = () => {
             Questions
           </h1>
 
-          {questions.map((q) => (
-            <div
-              key={q._id}
-              className="border-b border-gray-300 dark:border-gray-600 py-4"
-            >
-              <Link
-                to={`/questions/${q._id}`}
-                className="text-lg font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {q.title}
-              </Link>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {q.body.substring(0, 60)}...
-              </p>
-              <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">
-                Posted by{" "}
-                <Link
-                  to={`/users/${q.author._id}`}
-                  className="text-blue-500 dark:text-blue-300 hover:underline"
-                >
-                  {q.author.username}
-                </Link>
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Views: {q.views}
-              </p>
-            </div>
+          {questions.map((question) => (
+            <Question
+              key={question._id}
+              question={question}
+              showAuthor={true}
+              align={"left"}
+            />
           ))}
         </div>
 

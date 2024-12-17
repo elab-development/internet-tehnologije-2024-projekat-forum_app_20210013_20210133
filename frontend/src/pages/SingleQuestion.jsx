@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "../config/baseUrl";
 import useAuth from "../hooks/useAuth";
 
 import Toolbar from "../components/Toolbar";
+import Answer from "../components/Answer";
 
 const SingleQuestionPage = () => {
   const { id } = useParams();
@@ -168,28 +169,14 @@ const SingleQuestionPage = () => {
               )
             ) : (
               answers.map((answer) => (
-                <div
+                <Answer
                   key={answer._id}
-                  className="p-4 bg-white border rounded shadow-sm dark:bg-gray-800 dark:border-gray-700"
-                >
-                  <Link to={`/answers/${answer._id}`}>
-                    <p className="text-gray-700 text-justify dark:text-gray-200">
-                      {answer.body}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500 mt-2 dark:text-gray-400">
-                      <span>Posted by: </span>
-                      <a
-                        href={`/users/${answer.author._id}`}
-                        className="ml-2 text-blue-600 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                      >
-                        {answer.author.username}
-                      </a>
-                      <span className="ml-4">
-                        {new Date(answer.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                  </Link>
-                </div>
+                  answer={answer}
+                  token={token}
+                  userId={userId}
+                  isAuthenticated={isAuthenticated}
+                  clickable={true}
+                />
               ))
             )}
           </div>
