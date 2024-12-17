@@ -13,14 +13,32 @@ const SingleQuestionPage = () => {
   const [answers, setAnswers] = useState([]);
   const [newAnswer, setNewAnswer] = useState("");
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
 
   const { isAuthenticated, token, userId, isAdmin, isBanned, loading } =
     useAuth();
 
   useEffect(() => {
     increaseViewCount();
-    fetchData();
   }, [id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [page]);
+
+  const handleScroll = (e) => {
+    if (
+      window.innerHeight + e.target.documentElement.scrollTop + 1 >=
+      e.target.documentElement.scrollHeight
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -32,9 +50,10 @@ const SingleQuestionPage = () => {
       const answersRes = await axios.get(
         `${baseUrl}:${
           import.meta.env.VITE_BACKEND_PORT
-        }/answers/byQuestion/${id}`
+        }/answers/byQuestion/${id}?limit=5&page=${page}`
       );
-      setAnswers(answersRes.data);
+
+      setAnswers((prev) => [...prev, ...answersRes.data.answers]);
     } catch (error) {
       setError(
         error.response

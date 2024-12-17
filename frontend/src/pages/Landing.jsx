@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { FaArrowTrendUp } from "react-icons/fa6";
 
 const LandingPage = () => {
   const { isAuthenticated } = useAuth();
@@ -16,7 +17,11 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col justify-center items-center">
+    <div className="h-screen flex flex-col justify-center items-center pb-10">
+      <FaArrowTrendUp
+        size={100}
+        className="text-blue-600 dark:text-blue-400 text-bold"
+      />
       <h1 className="text-4xl font-bold text-blue-600 mb-4 dark:text-blue-400">
         Welcome to NullPointer!
       </h1>

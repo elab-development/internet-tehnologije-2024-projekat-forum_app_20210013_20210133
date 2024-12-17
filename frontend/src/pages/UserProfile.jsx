@@ -14,15 +14,39 @@ const UserProfilePage = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [toggleView, setToggleView] = useState("questions");
+  const [pageQuestions, setPageQuestions] = useState(1);
+  const [pageAnswers, setPageAnswers] = useState(1);
 
   const { isAuthenticated, token, userId, isAdmin, isBanned, loading } =
     useAuth();
 
   useEffect(() => {
     fetchUserData();
-    fetchQuestions();
-    fetchAnswers();
   }, [id]);
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [pageQuestions]);
+
+  useEffect(() => {
+    fetchAnswers();
+  }, [pageAnswers]);
+
+  const handleScroll = (e) => {
+    if (
+      window.innerHeight + e.target.documentElement.scrollTop + 1 >=
+      e.target.documentElement.scrollHeight
+    ) {
+      toggleView === "questions"
+        ? setPageQuestions((prev) => prev + 1)
+        : setPageAnswers((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [toggleView]);
 
   const fetchUserData = async () => {
     try {
@@ -31,7 +55,6 @@ const UserProfilePage = () => {
       );
 
       setUser(userRes.data);
-      fetchQuestions();
     } catch (error) {
       console.error("Error fetching user data: ", error);
     }
@@ -40,9 +63,11 @@ const UserProfilePage = () => {
   const fetchQuestions = async () => {
     try {
       const questionsRes = await axios.get(
-        `${baseUrl}:${import.meta.env.VITE_BACKEND_PORT}/questions/byUser/${id}`
+        `${baseUrl}:${
+          import.meta.env.VITE_BACKEND_PORT
+        }/questions/byUser/${id}?limit=5&page=${pageQuestions}`
       );
-      setQuestions(questionsRes.data);
+      setQuestions((prev) => [...prev, ...questionsRes.data.questions]);
     } catch (error) {
       console.error("Error fetching questions: ", error);
     }
@@ -51,9 +76,11 @@ const UserProfilePage = () => {
   const fetchAnswers = async () => {
     try {
       const answersRes = await axios.get(
-        `${baseUrl}:${import.meta.env.VITE_BACKEND_PORT}/answers/byUser/${id}`
+        `${baseUrl}:${
+          import.meta.env.VITE_BACKEND_PORT
+        }/answers/byUser/${id}?limit=5&page=${pageAnswers}`
       );
-      setAnswers(answersRes.data);
+      setAnswers((prev) => [...prev, ...answersRes.data.answers]);
     } catch (error) {
       console.error("Error fetching answers: ", error);
     }
@@ -61,11 +88,6 @@ const UserProfilePage = () => {
 
   const toggleContent = (view) => {
     setToggleView(view);
-    if (view === "questions") {
-      fetchQuestions();
-    } else if (view === "answers") {
-      fetchAnswers();
-    }
   };
 
   const handleBanUnban = async () => {

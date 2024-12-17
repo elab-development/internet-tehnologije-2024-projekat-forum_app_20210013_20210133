@@ -121,13 +121,13 @@ const Question = ({
             type="text"
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
-            className="w-full mb-2 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+            className={`w-full mb-2 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 text-${align}`}
             placeholder="Edit Title"
           />
           <textarea
             value={editedBody}
             onChange={(e) => setEditedBody(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 resize-none"
+            className={`w-full p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 resize-none text-${align}`}
             placeholder="Edit Body"
           />
         </>
