@@ -24,7 +24,7 @@ const Toolbar = ({ isAuthenticated, userId }) => {
           size={24}
           className="text-blue-500 dark:text-blue-300"
         />
-        <Link to={"/"}>
+        <Link to={isAuthenticated ? "/questions" : "/"}>
           <p className="ml-2">NullPointer</p>
         </Link>
       </div>

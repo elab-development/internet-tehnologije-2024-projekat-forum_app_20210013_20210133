@@ -26,7 +26,8 @@ const QuestionsPage = () => {
   const [showPostNew, setShowPostNew] = useState(false);
   const [error, setError] = useState(null);
 
-  const { isAuthenticated, token, userId, isBanned, loading } = useAuth();
+  const { isAuthenticated, token, userId, isAdmin, isBanned, loading } =
+    useAuth();
 
   useEffect(() => {
     fetchQuestions();
@@ -434,6 +435,12 @@ const QuestionsPage = () => {
             <Question
               key={question._id}
               question={question}
+              setQuestions={setQuestions}
+              token={token}
+              userId={userId}
+              isAuthenticated={isAuthenticated}
+              isAdmin={isAdmin}
+              isBanned={isBanned}
               showAuthor={true}
               align={"left"}
             />

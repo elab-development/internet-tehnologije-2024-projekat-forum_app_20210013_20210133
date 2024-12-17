@@ -12,7 +12,8 @@ const SingleAnswerPage = () => {
   const [answer, setAnswer] = useState(null);
   const [error, setError] = useState(null);
 
-  const { isAuthenticated, token, userId, loading } = useAuth();
+  const { isAuthenticated, token, userId, isAdmin, isBanned, loading } =
+    useAuth();
 
   useEffect(() => {
     fetchData();
@@ -58,7 +59,10 @@ const SingleAnswerPage = () => {
             token={token}
             userId={userId}
             isAuthenticated={isAuthenticated}
+            isAdmin={isAdmin}
+            isBanned={isBanned}
             clickable={false}
+            showAuthor={true}
           />
           {error && <p className="text-red-500 mt-4">{error}</p>}
 

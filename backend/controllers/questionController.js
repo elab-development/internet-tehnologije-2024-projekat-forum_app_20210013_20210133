@@ -1,5 +1,6 @@
 const User = require("../models/userModel.js");
 const Question = require("../models/questionModel.js");
+const Answer = require("../models/answerModel.js");
 
 // @desc    Fetches all questions ( with optional filters and pagination).
 // @route   GET /questions
@@ -257,6 +258,8 @@ const deleteQuestion = async (req, res) => {
       question.author.toString() !== req.user._id.toString()
     )
       return res.status(403).send("Unauthorized to delete this question!");
+
+    await Answer.deleteMany({ question });
 
     await question.deleteOne();
     res.status(200).send(question);

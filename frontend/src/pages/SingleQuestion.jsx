@@ -14,7 +14,8 @@ const SingleQuestionPage = () => {
   const [newAnswer, setNewAnswer] = useState("");
   const [error, setError] = useState(null);
 
-  const { isAuthenticated, token, userId, isBanned, loading } = useAuth();
+  const { isAuthenticated, token, userId, isAdmin, isBanned, loading } =
+    useAuth();
 
   useEffect(() => {
     increaseViewCount();
@@ -172,10 +173,14 @@ const SingleQuestionPage = () => {
                 <Answer
                   key={answer._id}
                   answer={answer}
+                  setAnswers={setAnswers}
                   token={token}
                   userId={userId}
                   isAuthenticated={isAuthenticated}
+                  isAdmin={isAdmin}
+                  isBanned={isBanned}
                   clickable={true}
+                  showAuthor={true}
                 />
               ))
             )}

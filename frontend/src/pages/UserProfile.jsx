@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "../config/baseUrl";
 import useAuth from "../hooks/useAuth";
@@ -15,7 +15,8 @@ const UserProfilePage = () => {
   const [answers, setAnswers] = useState([]);
   const [toggleView, setToggleView] = useState("questions");
 
-  const { isAuthenticated, token, userId, isAdmin, loading } = useAuth();
+  const { isAuthenticated, token, userId, isAdmin, isBanned, loading } =
+    useAuth();
 
   useEffect(() => {
     fetchUserData();
@@ -201,6 +202,12 @@ const UserProfilePage = () => {
                   <Question
                     key={question._id}
                     question={question}
+                    setQuestions={setQuestions}
+                    token={token}
+                    userId={userId}
+                    isAuthenticated={isAuthenticated}
+                    isAdmin={isAdmin}
+                    isBanned={isBanned}
                     showAuthor={false}
                     align={"center"}
                   />
@@ -217,10 +224,14 @@ const UserProfilePage = () => {
                   <Answer
                     key={answer._id}
                     answer={answer}
+                    setAnswers={setAnswers}
                     token={token}
                     userId={userId}
                     isAuthenticated={isAuthenticated}
+                    isAdmin={isAdmin}
+                    isBanned={isBanned}
                     clickable={true}
+                    showAuthor={false}
                   />
                 ))
               ))}
