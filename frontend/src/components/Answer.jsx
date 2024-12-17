@@ -15,6 +15,7 @@ const Answer = ({
   isBanned,
   clickable,
   showAuthor,
+  setUser,
 }) => {
   const [totalScore, setTotalScore] = useState(null);
   const [vote, setVote] = useState(null);
@@ -25,6 +26,7 @@ const Answer = ({
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log(answer.userVotes);
     setTotalScore(answer.totalVoteScore);
     setVote(
       answer.userVotes.some(
@@ -32,7 +34,7 @@ const Answer = ({
       )
         ? "upvote"
         : answer.userVotes.some(
-            (vote) => vote.user._id === userId && vote.vote === "downvote"
+            (vote) => user === vote.user._id && vote.vote === "downvote"
           )
         ? "downvote"
         : null
@@ -53,25 +55,32 @@ const Answer = ({
         }
       );
 
-      setTotalScore(response.data.totalVoteScore);
+      setTotalScore(response.data.answer.totalVoteScore);
       setVote(
-        response.data.userVotes.some(
+        response.data.answer.userVotes.some(
           (vote) => vote.user._id === userId && vote.vote === "upvote"
         )
           ? "upvote"
-          : response.data.userVotes.some(
+          : response.data.answer.userVotes.some(
               (vote) => vote.user._id === userId && vote.vote === "downvote"
             )
           ? "downvote"
           : null
       );
 
+      if (setUser) {
+        setUser((prevUser) => ({
+          ...prevUser,
+          reputation: response.data.newUserReputation,
+        }));
+      }
+
       if (!setAnswer) return;
 
       setAnswer((prevAnswer) => ({
         ...prevAnswer,
-        totalVoteScore: response.data.totalVoteScore,
-        userVotes: response.data.userVotes,
+        totalVoteScore: response.data.answer.totalVoteScore,
+        userVotes: response.data.answer.userVotes,
       }));
     } catch (error) {
       console.error("Error voting on answer: ", error);
@@ -163,33 +172,35 @@ const Answer = ({
   return (
     <div className="p-4 bg-white border rounded shadow-sm dark:bg-gray-800 dark:border-gray-700 flex items-center">
       {/* Voting Section */}
-      {isAuthenticated && !isBanned && (
-        <div className="flex flex-col items-center justify-center mr-4">
-          <button
-            onClick={() => handleVote("upvote")}
-            className={
-              vote === "upvote"
-                ? "text-green-500"
-                : "text-gray-400 hover:text-green-500"
-            }
-          >
-            ▲
-          </button>
-          <span className="text-gray-700 dark:text-gray-200 font-bold">
-            {totalScore}
-          </span>
-          <button
-            onClick={() => handleVote("downvote")}
-            className={
-              vote === "downvote"
-                ? "text-red-500"
-                : "text-gray-400 hover:text-red-500"
-            }
-          >
-            ▼
-          </button>
-        </div>
-      )}
+      {isAuthenticated &&
+        !isBanned &&
+        (answer.author._id ? answer.author._id : answer.author) != userId && (
+          <div className="flex flex-col items-center justify-center mr-4">
+            <button
+              onClick={() => handleVote("upvote")}
+              className={
+                vote === "upvote"
+                  ? "text-green-500"
+                  : "text-gray-400 hover:text-green-500"
+              }
+            >
+              ▲
+            </button>
+            <span className="text-gray-700 dark:text-gray-200 font-bold">
+              {totalScore}
+            </span>
+            <button
+              onClick={() => handleVote("downvote")}
+              className={
+                vote === "downvote"
+                  ? "text-red-500"
+                  : "text-gray-400 hover:text-red-500"
+              }
+            >
+              ▼
+            </button>
+          </div>
+        )}
 
       <div className="flex-1 mb-1">
         <div>

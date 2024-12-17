@@ -182,6 +182,17 @@ const QuestionsPage = () => {
       <div className="flex flex-row md:mx-20 mx-5 my-24 justify-around">
         <div className="lg:w-3/5 w-full">
           <div className="mb-6">
+            <div className="flex lg:hidden justify-between items-center mb-6 ">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                Browse Users
+              </h2>
+              <Link
+                to={"/users"}
+                className="text-sm text-blue-600 dark:text-blue-300 hover:underline"
+              >
+                View
+              </Link>
+            </div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Filters
@@ -453,7 +464,7 @@ const QuestionsPage = () => {
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Top Users
           </h2>
-          <div>
+          <div className="mb-4">
             {users.map((user) => (
               <div
                 key={user._id}
@@ -471,6 +482,12 @@ const QuestionsPage = () => {
               </div>
             ))}
           </div>
+          <Link
+            to={"/users"}
+            className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
+          >
+            View All
+          </Link>
         </div>
       </div>
     </>

@@ -15,6 +15,7 @@ const Toolbar = ({ isAuthenticated, userId }) => {
 
   const handleUserRedirect = () => {
     navigate(`/users/${userId}`);
+    navigate(0);
   };
 
   return (

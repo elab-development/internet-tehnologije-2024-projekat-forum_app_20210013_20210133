@@ -26,11 +26,11 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     fetchQuestions();
-  }, [pageQuestions]);
+  }, [pageQuestions, id]);
 
   useEffect(() => {
     fetchAnswers();
-  }, [pageAnswers]);
+  }, [pageAnswers, id]);
 
   const handleScroll = (e) => {
     if (
@@ -53,7 +53,6 @@ const UserProfilePage = () => {
       const userRes = await axios.get(
         `${baseUrl}:${import.meta.env.VITE_BACKEND_PORT}/users/${id}`
       );
-
       setUser(userRes.data);
     } catch (error) {
       console.error("Error fetching user data: ", error);
@@ -254,6 +253,7 @@ const UserProfilePage = () => {
                     isBanned={isBanned}
                     clickable={true}
                     showAuthor={false}
+                    setUser={setUser}
                   />
                 ))
               ))}

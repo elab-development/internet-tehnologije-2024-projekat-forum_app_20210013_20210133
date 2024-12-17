@@ -12,6 +12,7 @@ import QuestionsPage from "./pages/Questions";
 import SingleQuestionPage from "./pages/SingleQuestion";
 import UserProfilePage from "./pages/UserProfile";
 import SingleAnswerPage from "./pages/SingleAnswer";
+import UsersPage from "./pages/Users";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/questions/:id" element={<SingleQuestionPage />} />
           <Route path="/users/:id" element={<UserProfilePage />} />
           <Route path="/answers/:id" element={<SingleAnswerPage />} />
+          <Route path="/users" element={<UsersPage />} />
         </Routes>
       </Router>
     </DarkModeProvider>

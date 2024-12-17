@@ -7,7 +7,13 @@ const handleExistingVote = async (existingVote, vote, userId, answer, res) => {
   } else {
     await switchVote(vote, userId, answer);
   }
-  return res.status(200).json(answer);
+
+  const author = await User.findById(answer.author);
+
+  return res.status(200).json({
+    answer: answer,
+    newUserReputation: author ? author.reputation : null,
+  });
 };
 
 // @desc  Retracts a users vote.
@@ -64,7 +70,9 @@ const handleNewVote = async (vote, userId, answer, res) => {
     await author.save();
   }
 
-  return res.status(200).json(answer);
+  return res
+    .status(200)
+    .json({ answer: answer, newUserReputation: author.reputation });
 };
 
 module.exports = { handleNewVote, handleExistingVote };

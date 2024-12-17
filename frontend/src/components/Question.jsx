@@ -158,7 +158,10 @@ const Question = ({
       )}
 
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        Views: {question.views}
+        Views: {question.views}{" "}
+        {question.answers.length !== 0
+          ? `| Answers: ${question.answers.length}`
+          : ""}
       </p>
 
       {/* Edit and Delete Section */}
