@@ -28,14 +28,14 @@ Before you start, ensure you have the following installed on your machine:
 mkdir forum_app
 cd forum_app
 git clone https://github.com/elab-development/internet-tehnologije-2024-projekat-forum_app_20210013_20210133.git .
+cd backend
 ```
 
 ### 2. Install dependencies
 
-Run the following commands to install the necessary packages:
+Run the following command to install the necessary packages:
 
 ```
-cd backend
 npm install
 ```
 
@@ -45,17 +45,19 @@ Create a .env file in the root of the backend directory and add the following en
 
 ```
 PORT=port_number
+FRONTEND_PORT=frontend_port_number
 MONGO_URI=database_connection_string
 JWT_SECRET=jwt_secret_key
 MAIL_PASS=password_for_email_service
 ```
 
-| Variable     | Description                                                                   |
-| ------------ | ----------------------------------------------------------------------------- |
-| `PORT`       | Port on which the server will run.                                            |
-| `MONGO_URI`  | Connection string for your MongoDB instance.                                  |
-| `JWT_SECRET` | A secret key used for signing JWT tokens.                                     |
-| `MAIL_PASS`  | The password for your email service (used for sending password reset emails). |
+| Variable        | Description                                                                   |
+| --------------- | ----------------------------------------------------------------------------- |
+| `PORT`          | Port on which the server will run.                                            |
+| `FRONTEND_PORT` | Port on which the frontend service runs.                                      |
+| `MONGO_URI`     | Connection string for your MongoDB instance.                                  |
+| `JWT_SECRET`    | A secret key used for signing JWT tokens.                                     |
+| `MAIL_PASS`     | The password for your email service (used for sending password reset emails). |
 
 For the email service, you should use Gmail (check email configuration for "Less Secure Apps" or use App Passwords).
 
@@ -97,14 +99,15 @@ You can test the API endpoints using Postman or your preferred API client. Below
 
 #### Question Routes
 
-| Method | Endpoint            | Description                                | Access |
-| ------ | ------------------- | ------------------------------------------ | ------ |
-| GET    | /questions          | Fetch all questions with optional filters. | Public |
-| GET    | /questions/:id      | Fetch a single question by id.             | Public |
-| POST   | /questions          | Add a new question.                        | User   |
-| PUT    | /questions/:id      | Update a specific question by id.          | User   |
-| DELETE | /questions/:id      | Delete a specific question by id.          | User   |
-| POST   | /questions/:id/view | Update view count for a specific question. | Public |
+| Method | Endpoint              | Description                                                     | Access |
+| ------ | --------------------- | --------------------------------------------------------------- | ------ |
+| GET    | /questions            | Fetch all questions with optional filters.                      | Public |
+| GET    | /questions/:id        | Fetch a single question by id.                                  | Public |
+| GET    | /questions/byUser/:id | Fetches all questions of a user with id, with optional filters. | Public |
+| POST   | /questions            | Add a new question.                                             | User   |
+| PUT    | /questions/:id        | Update a specific question by id.                               | User   |
+| DELETE | /questions/:id        | Delete a specific question by id.                               | User   |
+| POST   | /questions/:id/view   | Update view count for a specific question.                      | Public |
 
 #### Answer Routes
 
