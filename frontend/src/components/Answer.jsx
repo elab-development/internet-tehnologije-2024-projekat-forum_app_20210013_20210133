@@ -34,7 +34,7 @@ const Answer = ({
       )
         ? "upvote"
         : answer.userVotes.some(
-            (vote) => user === vote.user._id && vote.vote === "downvote"
+            (vote) => vote.user._id === userId && vote.vote === "downvote"
           )
         ? "downvote"
         : null
