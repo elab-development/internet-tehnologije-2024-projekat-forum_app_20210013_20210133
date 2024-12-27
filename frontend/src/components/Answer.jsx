@@ -26,7 +26,6 @@ const Answer = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(answer.userVotes);
     setTotalScore(answer.totalVoteScore);
     setVote(
       answer.userVotes.some(
@@ -208,14 +207,13 @@ const Answer = ({
             <textarea
               value={editedBody}
               onChange={(e) => setEditedBody(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 resize-none"
+              className="text-justify w-full p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 resize-none"
             />
           ) : clickable ? (
-            <Link
-              to={`/answers/${answer._id}`}
-              className="text-gray-700 text-justify dark:text-gray-200 hover:underline"
-            >
-              {answer.body}
+            <Link to={`/answers/${answer._id}`}>
+              <p className="text-gray-700 text-justify dark:text-gray-200 hover:underline">
+                {answer.body}
+              </p>
             </Link>
           ) : (
             <p className="text-gray-700 text-justify dark:text-gray-200">

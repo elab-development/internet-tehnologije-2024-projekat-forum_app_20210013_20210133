@@ -21,6 +21,12 @@ const UserProfilePage = () => {
     useAuth();
 
   useEffect(() => {
+    setQuestions([]);
+    setAnswers([]);
+    setToggleView("questions");
+    setPageQuestions(1);
+    setPageAnswers(1);
+
     fetchUserData();
   }, [id]);
 

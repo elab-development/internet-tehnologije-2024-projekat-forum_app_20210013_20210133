@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import debounce from "lodash.debounce";
 import { baseUrl } from "../config/baseUrl";
 import useAuth from "../hooks/useAuth";
+import { useSearch } from "../hooks/useSearch";
 
 import Toolbar from "../components/Toolbar";
 import Question from "../components/Question";
+import GlobalSearch from "../components/GlobalSearch";
 
 const QuestionsPage = () => {
+  const { searchQuery } = useSearch();
+
   const [questions, setQuestions] = useState([]);
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
+
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     minViews: "",
     maxViews: "",
-    createdAfter: "",
-    createdBefore: "",
     updatedAfter: "",
     updatedBefore: "",
     minAnswers: "",
@@ -33,6 +38,27 @@ const QuestionsPage = () => {
     fetchQuestions();
     fetchUsersByReputation();
   }, [page]);
+
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchQuery, questions]);
+
+  const debouncedSearch = debounce((query) => {
+    if (query) {
+      const filtered = questions.filter(
+        (q) =>
+          q.title.toLowerCase().includes(query.toLowerCase()) ||
+          q.body.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredQuestions(filtered);
+    } else {
+      setFilteredQuestions(questions);
+    }
+  }, 300);
 
   const toggleFilters = () => {
     setShowFilters((prev) => !prev);
@@ -139,6 +165,7 @@ const QuestionsPage = () => {
         }/questions?${queryParams}`
       );
       setQuestions((prev) => [...prev, ...res.data.questions]);
+      setFilteredQuestions((prev) => [...prev, ...res.data.questions]);
     } catch (error) {
       setError(
         error.response
@@ -241,44 +268,6 @@ const QuestionsPage = () => {
                     value={filters.maxViews}
                     onChange={handleFilterChange}
                     placeholder="Enter Max Views"
-                    className="border p-2 rounded w-full text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                {/* Created After */}
-                <div>
-                  <label
-                    className="block text-sm text-gray-700 dark:text-gray-200 mb-1 ml-1"
-                    htmlFor="createdAfter"
-                  >
-                    Created After
-                  </label>
-                  <input
-                    id="createdAfter"
-                    type="date"
-                    name="createdAfter"
-                    value={filters.createdAfter}
-                    onChange={handleFilterChange}
-                    placeholder="Select Start Date"
-                    className="border p-2 rounded w-full text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                {/* Created Before */}
-                <div>
-                  <label
-                    className="block text-sm text-gray-700 dark:text-gray-200 mb-1 ml-1"
-                    htmlFor="createdBefore"
-                  >
-                    Created Before
-                  </label>
-                  <input
-                    id="createdBefore"
-                    type="date"
-                    name="createdBefore"
-                    value={filters.createdBefore}
-                    onChange={handleFilterChange}
-                    placeholder="Select End Date"
                     className="border p-2 rounded w-full text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                   />
                 </div>
@@ -399,7 +388,7 @@ const QuestionsPage = () => {
                             title: e.target.value,
                           })
                         }
-                        className="w-3/5 p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                        className="sm:w-3/5 w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                       />
                     </div>
 
@@ -413,7 +402,7 @@ const QuestionsPage = () => {
                             body: e.target.value,
                           })
                         }
-                        className="w-4/5 p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                        className="sm:w-4/5 w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                         rows="4"
                       />
                     </div>
@@ -438,11 +427,12 @@ const QuestionsPage = () => {
             <></>
           )}
 
-          <h1 className="text-3xl font-bold text-gray-700 dark:text-gray-200 mt-10">
+          <h1 className="text-3xl font-bold text-gray-700 dark:text-gray-200 mt-10 mb-4">
             Questions
           </h1>
 
-          {questions.map((question) => (
+          <GlobalSearch />
+          {filteredQuestions.map((question) => (
             <Question
               key={question._id}
               question={question}
@@ -460,7 +450,6 @@ const QuestionsPage = () => {
 
         <div className="w-1/6 h-full hidden lg:block text-center">
           {" "}
-          {/*bg-gray-100 rounded shadow*/}
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Top Users
           </h2>
