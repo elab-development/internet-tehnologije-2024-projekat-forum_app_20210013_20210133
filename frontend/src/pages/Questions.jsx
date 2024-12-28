@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import debounce from "lodash.debounce";
 import { baseUrl } from "../config/baseUrl";
 import useAuth from "../hooks/useAuth";
-import { useSearch } from "../hooks/useSearch";
 
 import Toolbar from "../components/Toolbar";
 import Question from "../components/Question";
-import GlobalSearch from "../components/GlobalSearch";
 
 const QuestionsPage = () => {
-  const { searchQuery } = useSearch();
-
   const [questions, setQuestions] = useState([]);
-  const [filteredQuestions, setFilteredQuestions] = useState([]);
-
   const [users, setUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     minViews: "",
@@ -35,30 +29,35 @@ const QuestionsPage = () => {
     useAuth();
 
   useEffect(() => {
-    fetchQuestions();
     fetchUsersByReputation();
-  }, [page]);
+  }, []);
 
   useEffect(() => {
-    debouncedSearch(searchQuery);
+    const delayDebounceFn = setTimeout(() => {
+      setPage(1);
+      fetchQuestions({ search: searchQuery, page: 1 });
+    }, 300);
 
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [searchQuery, questions]);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
-  const debouncedSearch = debounce((query) => {
-    if (query) {
-      const filtered = questions.filter(
-        (q) =>
-          q.title.toLowerCase().includes(query.toLowerCase()) ||
-          q.body.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredQuestions(filtered);
-    } else {
-      setFilteredQuestions(questions);
+  const handleScroll = (e) => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop + 1 >=
+      document.documentElement.scrollHeight
+    ) {
+      setPage((prevPage) => {
+        const nextPage = prevPage + 1;
+        fetchQuestions({ search: searchQuery, page: nextPage });
+        return nextPage;
+      });
     }
-  }, 300);
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [searchQuery, page]);
 
   const toggleFilters = () => {
     setShowFilters((prev) => !prev);
@@ -92,20 +91,6 @@ const QuestionsPage = () => {
     });
     return queryParams.toString();
   };
-
-  const handleScroll = (e) => {
-    if (
-      window.innerHeight + e.target.documentElement.scrollTop + 1 >=
-      e.target.documentElement.scrollHeight
-    ) {
-      setPage((prev) => prev + 1);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const handlePostNewQuestion = async () => {
     if (!newQuestion.title) {
@@ -151,9 +136,10 @@ const QuestionsPage = () => {
     }
   };
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = async ({ search = "", page = 1 } = {}) => {
     try {
       const queryParams = buildQueryParams({
+        search,
         page,
         limit: 5,
         ...filters,
@@ -164,8 +150,9 @@ const QuestionsPage = () => {
           import.meta.env.VITE_BACKEND_PORT
         }/questions?${queryParams}`
       );
-      setQuestions((prev) => [...prev, ...res.data.questions]);
-      setFilteredQuestions((prev) => [...prev, ...res.data.questions]);
+
+      if (page === 1) setQuestions(res.data.questions);
+      else setQuestions((prev) => [...prev, ...res.data.questions]);
     } catch (error) {
       setError(
         error.response
@@ -359,7 +346,6 @@ const QuestionsPage = () => {
               </button>
             )}
           </div>
-
           {isAuthenticated && !isBanned ? (
             <div>
               <div className="flex justify-between items-center mb-2">
@@ -426,13 +412,19 @@ const QuestionsPage = () => {
           ) : (
             <></>
           )}
-
           <h1 className="text-3xl font-bold text-gray-700 dark:text-gray-200 mt-10 mb-4">
             Questions
           </h1>
-
-          <GlobalSearch />
-          {filteredQuestions.map((question) => (
+          <div className="mb-8">
+            <input
+              type="text"
+              placeholder="Search Questions by Title or Body Content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="sm:w-4/5 w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600"
+            />
+          </div>
+          {questions.map((question) => (
             <Question
               key={question._id}
               question={question}

@@ -113,7 +113,7 @@ const Question = ({
   return (
     <div
       key={question._id}
-      className={`border-b border-gray-300 dark:border-gray-600 py-4 sm:text-${align} text-justify`}
+      className={`border-b border-gray-300 dark:border-gray-600 py-4 text-${align}`}
     >
       {isEditing ? (
         <>
@@ -121,13 +121,13 @@ const Question = ({
             type="text"
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
-            className={`w-full mb-2 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 sm:text-${align} text-justify`}
+            className={`w-full mb-2 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 text-${align}`}
             placeholder="Edit Title"
           />
           <textarea
             value={editedBody}
             onChange={(e) => setEditedBody(e.target.value)}
-            className={`w-full p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 resize-none sm:text-${align} text-justify`}
+            className={`w-full p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 resize-none text-${align}`}
             placeholder="Edit Body"
           />
         </>
@@ -166,9 +166,7 @@ const Question = ({
 
       {/* Edit and Delete Section */}
       {isAuthenticated && !isBanned && (
-        <div
-          className={`mt-1 flex space-x-2 sm:justify-${align} justify-start`}
-        >
+        <div className={`mt-2 flex space-x-2 justify-${align}`}>
           {/* Edit Button - Visible only for Author */}
           {(question.author._id ? question.author._id : question.author) ===
             userId && (
